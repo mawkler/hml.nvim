@@ -6,8 +6,9 @@ Adds `H`/`M`/`L` indicators to your line number column.
 
 By default in Neovim, `H`/`M`/`L` jump to the **h**ighest, **m**iddle, and **l**owest line in the current visible window. If you have [`scrolloff`](https://neovim.io/doc/user/options.html#'scrolloff') set, it can be dificult to tell exactly which lines they correspond to. This plugin helps you visualize this.
 
-## Setup
+In the screenshot above I have set `scrolloff` to 3.
 
+## Setup
 
 With [lazy.nvim](https://github.com/folke/lazy.nvim/):
 
