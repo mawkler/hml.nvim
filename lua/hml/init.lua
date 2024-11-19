@@ -1,4 +1,5 @@
 local M = {}
+
 local options = {
   signs = {
     H = 'H',
@@ -21,17 +22,28 @@ function M.get()
   local viewport_bottom = vim.fn.line('w$')
   local viewport_middle = math.floor((viewport_bottom - viewport_top) / 2 + viewport_top)
 
-  local H = viewport_top == 1 and 1 or viewport_top + scrolloff
-  local M = viewport_middle
-  local L = viewport_bottom >= last_line and last_line or viewport_bottom - scrolloff
+  local H = viewport_top + scrolloff
+  if viewport_top == 1 then
+    H = 1
+  elseif H > viewport_middle then
+    H = math.max(H, scrolloff)
+  end
+
+  local L = viewport_bottom - scrolloff
+  if viewport_bottom >= last_line then
+    L = last_line
+  elseif L < viewport_middle then
+    L = viewport_middle
+  end
 
   return {
     H = H,
-    M = M,
+    M = math.max(viewport_middle, H),
     L = L,
   }
 end
 
+---@return string
 function M.status_column()
   if not vim.o.number then
     return ''
@@ -49,7 +61,7 @@ function M.status_column()
   local line_number
   -- Current line
   if lnum == current_line then
-    line_number = lnum
+    line_number = tostring(lnum)
   elseif lnum == hml.H then
     line_number = options.signs.H
   elseif lnum == hml.M then
@@ -58,7 +70,7 @@ function M.status_column()
     line_number = options.signs.L
   else
     -- All other lines
-    line_number = vim.o.relativenumber and vim.v.relnum or vim.v.lnum
+    line_number = tostring(vim.o.relativenumber and vim.v.relnum or vim.v.lnum)
   end
 
   -- Don't draw line numbers on virtual/wrapped lines
