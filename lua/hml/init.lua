@@ -1,5 +1,12 @@
 local M = {}
 
+--- @class HMLSignsOptions
+--- @field H? string Sign to use for the `H` line number
+--- @field M? string Sign to use for the `M` line number
+--- @field L? string Sign to use for the `L` line number
+
+--- @class HMLOptions
+--- @field signs? HMLSignsOptions
 local options = {
   signs = {
     H = 'H',
@@ -13,6 +20,7 @@ local state = {
   enabled = false,
 }
 
+---Gets the line numbers for H, M, L, respectively
 ---@return { H: number, M: number, L: number }
 function M.get()
   local scrolloff = vim.wo.scrolloff
@@ -44,7 +52,7 @@ function M.get()
 end
 
 ---@return string
-function M.status_column()
+function M.get_status_column()
   if not vim.o.number then
     return ''
   end
@@ -79,7 +87,7 @@ end
 
 function M.enable()
   local sign_column = '%s'
-  local line_number = '%=%{%v:lua.require("hml").status_column()%}'
+  local line_number = '%=%{%v:lua.require("hml").get_status_column()%}'
   local fold_column = '%C'
   local padding = ' '
 
