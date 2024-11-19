@@ -1,9 +1,36 @@
 local M = {}
-local options = {}
+local options = {
+  signs = {
+    H = 'H',
+    M = 'M',
+    L = 'L',
+  },
+}
+
 local state = {
   previous_statuscolumn = nil,
   enabled = false,
 }
+
+---@return { H: number, M: number, L: number }
+function M.get()
+  local scrolloff = vim.wo.scrolloff
+  local last_line = vim.fn.line('$')
+
+  local viewport_top = vim.fn.line('w0')
+  local viewport_bottom = vim.fn.line('w$')
+  local viewport_middle = math.floor((viewport_bottom - viewport_top) / 2 + viewport_top)
+
+  local H = viewport_top == 1 and 1 or viewport_top + scrolloff
+  local M = viewport_middle
+  local L = viewport_bottom >= last_line and last_line or viewport_bottom - scrolloff
+
+  return {
+    H = H,
+    M = M,
+    L = L,
+  }
+end
 
 function M.status_column()
   if not vim.o.number then
@@ -11,35 +38,24 @@ function M.status_column()
   end
 
   local current_line = vim.fn.line('.')
-  local scrolloff = vim.wo.scrolloff
   local lnum = vim.v.lnum
-  local last_line = vim.fn.line('$')
-
-  local viewport_top = vim.fn.line('w0')
-  local viewport_bottom = vim.fn.line('w$')
-  local viewport_middle = math.floor((viewport_bottom - viewport_top) / 2 + viewport_top)
 
   -- NOTE: If the last line is visible, `L` will jump to that line regardless
   -- of `scrolloff`. Similarly, if the first line is visible, `H` will jump to
   -- the first line regardless of `scrolloff`
 
+  local hml = M.get()
+
   local line_number
   -- Current line
   if lnum == current_line then
     line_number = lnum
-    -- H
-  elseif viewport_top == 1 and lnum == viewport_top then
-    line_number = 'H'
-  elseif viewport_top > 1 and lnum == viewport_top + scrolloff then
-    line_number = 'H'
-    -- M
-  elseif viewport_middle == lnum then
-    line_number = 'M'
-    -- L
-  elseif viewport_bottom < last_line and lnum == viewport_bottom - scrolloff then
-    line_number = 'L'
-  elseif viewport_bottom >= last_line and lnum == last_line then
-    line_number = 'L'
+  elseif lnum == hml.H then
+    line_number = options.signs.H
+  elseif lnum == hml.M then
+    line_number = options.signs.M
+  elseif lnum == hml.L then
+    line_number = options.signs.L
   else
     -- All other lines
     line_number = vim.o.relativenumber and vim.v.relnum or vim.v.lnum
